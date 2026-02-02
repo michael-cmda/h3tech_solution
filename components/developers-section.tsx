@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useMemo, useRef } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useMemo, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { developers, categories } from '@/lib/developers';
 import { DeveloperCard } from './developer-card';
 import { Button } from '@/components/ui/button';
@@ -9,115 +9,135 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 export function DevelopersSection() {
   const [selectedCategory, setSelectedCategory] = useState('All');
-  const [scrollPosition, setScrollPosition] = useState(0);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   const filteredDevelopers = useMemo(() => {
     if (selectedCategory === 'All') return developers;
     return developers.filter((dev) => dev.category === selectedCategory);
   }, [selectedCategory]);
 
-  const scroll = (direction: 'left' | 'right') => {
-    if (scrollContainerRef.current) {
-      const scrollAmount = 400;
-      const newPosition = direction === 'left' 
-        ? scrollPosition - scrollAmount 
-        : scrollPosition + scrollAmount;
-      scrollContainerRef.current.scrollTo({ left: newPosition, behavior: 'smooth' });
-      setScrollPosition(newPosition);
-    }
+  const handleNext = useCallback(() => {
+    setCurrentIndex((prev) => (prev + 1) % filteredDevelopers.length);
+  }, [filteredDevelopers.length]);
+
+  const handlePrev = useCallback(() => {
+    setCurrentIndex((prev) => (prev - 1 + filteredDevelopers.length) % filteredDevelopers.length);
+  }, [filteredDevelopers.length]);
+
+  // Keyboard Navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') handlePrev();
+      if (e.key === 'ArrowRight') handleNext();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleNext, handlePrev]);
+
+  useEffect(() => {
+    setCurrentIndex(0);
+  }, [selectedCategory]);
+
+  const getCardStyles = (index: number) => {
+    const total = filteredDevelopers.length;
+    let diff = index - currentIndex;
+    if (diff > total / 2) diff -= total;
+    if (diff < -total / 2) diff += total;
+
+    const isActive = diff === 0;
+    return {
+      isActive,
+      zIndex: isActive ? 30 : 20 - Math.abs(diff),
+      scale: isActive ? 1.05 : 0.8,
+      x: diff * 340,
+      opacity: Math.abs(diff) > 2 ? 0 : 1 - Math.abs(diff) * 0.3,
+      rotateY: diff * -12,
+    };
   };
 
   return (
-    <section id="developers" className="relative bg-background py-20 md:py-32">
-      {/* Background gradient */}
-      <div className="absolute inset-0 -z-10 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-t from-cyan-500/5 via-transparent to-transparent blur-3xl" />
-      </div>
-
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-12 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-          >
-            <h2 className="mb-4 text-4xl font-bold text-foreground md:text-5xl">
-              <span className="text-balance">Meet our talented</span>
-              <br />
-              <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
-                developers
-              </span>
-            </h2>
-            <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
-              A specialized team of full-stack, frontend, backend, and mobile developers focused on delivering excellence.
-            </p>
-          </motion.div>
-        </div>
-
-        {/* Category filters */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-          viewport={{ once: true }}
-          className="mb-12 flex flex-wrap justify-center gap-3"
-        >
+    <section id="developers" className="relative bg-background py-20 overflow-hidden">
+      <div className="mx-auto max-w-7xl px-4">
+        
+        {/* Category Filter Buttons */}
+        <div className="mb-16 flex flex-wrap justify-center gap-2">
           {categories.map((category) => (
-            <Button
+            <button
               key={category}
               onClick={() => setSelectedCategory(category)}
-              variant={selectedCategory === category ? 'default' : 'outline'}
-              className={
+              className={`px-6 py-2 rounded-full text-sm font-medium transition-all duration-300 border ${
                 selectedCategory === category
-                  ? 'bg-cyan-500 hover:bg-cyan-600 text-black font-semibold'
-                  : 'border-cyan-500/30 text-foreground hover:border-cyan-500/60'
-              }
+                  ? 'bg-cyan-500 border-cyan-400 text-black shadow-[0_0_15px_rgba(6,182,212,0.4)]'
+                  : 'bg-transparent border-white/10 text-muted-foreground hover:border-cyan-500/50'
+              }`}
             >
               {category}
-            </Button>
+            </button>
           ))}
-        </motion.div>
+        </div>
 
-        {/* Developer slider */}
-        <div className="relative">
-          <div
-            ref={scrollContainerRef}
-            className="flex gap-6 overflow-x-auto scroll-smooth pb-8"
-            style={{ 
-              scrollBehavior: 'smooth',
-              scrollbarWidth: 'thin',
-              scrollbarColor: '#00d9ff #1a1a1a'
-            }}
-          >
-            {filteredDevelopers.map((developer, index) => (
-              <div key={developer.name} className="flex-shrink-0 w-80">
-                <DeveloperCard {...developer} index={index} />
-              </div>
-            ))}
-          </div>
-
-          {/* Slider controls */}
-          <div className="absolute -bottom-16 left-0 right-0 flex justify-center gap-3">
+        {/* Carousel Area */}
+        <div className="relative flex h-[550px] items-center justify-center">
+          
+          {/* Main Navigation Buttons (The "Correct" Floating Style) */}
+          <div className="absolute inset-x-0 top-1/2 z-50 flex -translate-y-1/2 justify-between px-4 md:px-10">
             <Button
-              onClick={() => scroll('left')}
-              size="sm"
+              onClick={handlePrev}
               variant="outline"
-              className="border-cyan-500/30 text-foreground hover:border-cyan-500 hover:bg-cyan-500/10"
+              size="icon"
+              className="h-12 w-12 rounded-full border-cyan-500/20 bg-background/20 backdrop-blur-md hover:bg-cyan-500/20 hover:border-cyan-400 text-cyan-400 transition-all active:scale-95"
             >
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="h-6 w-6" />
             </Button>
             <Button
-              onClick={() => scroll('right')}
-              size="sm"
+              onClick={handleNext}
               variant="outline"
-              className="border-cyan-500/30 text-foreground hover:border-cyan-500 hover:bg-cyan-500/10"
+              size="icon"
+              className="h-12 w-12 rounded-full border-cyan-500/20 bg-background/20 backdrop-blur-md hover:bg-cyan-500/20 hover:border-cyan-400 text-cyan-400 transition-all active:scale-95"
             >
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="h-6 w-6" />
             </Button>
           </div>
+
+          {/* Cards Container */}
+          <div className="relative h-full w-full max-w-sm">
+            <AnimatePresence mode="popLayout">
+              {filteredDevelopers.map((developer, index) => {
+                const styles = getCardStyles(index);
+                return (
+                  <motion.div
+                    key={`${developer.name}-${selectedCategory}`}
+                    animate={{
+                      x: styles.x,
+                      scale: styles.scale,
+                      zIndex: styles.zIndex,
+                      opacity: styles.opacity,
+                      rotateY: styles.rotateY,
+                    }}
+                    transition={{ type: 'spring', stiffness: 260, damping: 20 }}
+                    className="absolute inset-0 cursor-pointer"
+                    onClick={() => styles.isActive ? null : setCurrentIndex(index)}
+                  >
+                    <div className={`h-full rounded-2xl transition-all duration-500 ${
+                      styles.isActive ? 'shadow-[0_0_40px_rgba(6,182,212,0.3)]' : 'grayscale-[50%] opacity-50'
+                    }`}>
+                      <DeveloperCard {...developer} index={index} />
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
+          </div>
+        </div>
+
+        {/* Bottom Pagination Dots (Optional Visual Indicator) */}
+        <div className="mt-8 flex justify-center gap-2">
+          {filteredDevelopers.map((_, i) => (
+            <div 
+              key={i} 
+              className={`h-1.5 transition-all duration-300 rounded-full ${i === currentIndex ? 'w-8 bg-cyan-500' : 'w-2 bg-white/20'}`} 
+            />
+          ))}
         </div>
       </div>
     </section>
