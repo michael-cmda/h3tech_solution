@@ -13,7 +13,7 @@ export const developers = [
     category: "Backend",
     skills: ["PHP", "Laravel", "REST APIs", "MySQL", "Server-side Logic"],
     linkedIn: "https://www.linkedin.com/in/lagriamj/",
-    avatar: "/assets/avatars/mark.jpg",
+    avatar: "/assets/avatars/mark2.jpg",
   },
   {
     name: "Rolando Mondilla Jr.",
@@ -37,7 +37,7 @@ export const developers = [
     category: "Backend",
     skills: ["JavaScript", "Web Development", "Debugging", "Code Optimization", "Problem Solving"],
     linkedIn: "https://www.linkedin.com/in/glywys-claude-igoy-33256826b/",
-    avatar: "/assets/avatars/glywys.jpg",
+    avatar: "/assets/avatars/glywys2.jpg",
   },
   {
     name: "Michael Jan Arieta",
