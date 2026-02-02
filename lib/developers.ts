@@ -95,8 +95,8 @@ export const developers = [
   },
  {
   name: "Dahnica Tedlos",
-  role: "IT Administrator",
-  category: "Backend",
+  role: "IT",
+  category: "Networking",
   skills: [
     "System Administration",
     "Network Troubleshooting",
