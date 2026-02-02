@@ -8,7 +8,7 @@ export const developers = [
     avatar: "/assets/avatars/kenneth.jpg",
   },
   {
-    name: "Mark Joseph Lagria",
+    name: "Mark John Lagria",
     role: "Backend Developer",
     category: "Backend",
     skills: ["PHP", "Laravel", "REST APIs", "MySQL", "Server-side Logic"],
