@@ -43,7 +43,7 @@ export const developers = [
     name: "Michael Jan Arieta",
     role: "Full Stack Developer",
     category: "Full Stack",
-    skills: ["Next.js", "Supabase", "REST APIs", "Automation", "UI/UX"],
+    skills: ["Next.js", "Supabase", "REST APIs", "Automation"],
     linkedIn: "https://www.linkedin.com/in/michael-jan-arieta-a8b30a242/",
     avatar: "/assets/avatars/michael.jpg",
   },
