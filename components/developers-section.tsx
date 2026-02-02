@@ -24,16 +24,6 @@ export function DevelopersSection() {
     setCurrentIndex((prev) => (prev - 1 + filteredDevelopers.length) % filteredDevelopers.length);
   }, [filteredDevelopers.length]);
 
-  // Keyboard Navigation
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowLeft') handlePrev();
-      if (e.key === 'ArrowRight') handleNext();
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleNext, handlePrev]);
-
   useEffect(() => {
     setCurrentIndex(0);
   }, [selectedCategory]);
@@ -48,27 +38,27 @@ export function DevelopersSection() {
     return {
       isActive,
       zIndex: isActive ? 30 : 20 - Math.abs(diff),
-      scale: isActive ? 1.05 : 0.8,
-      x: diff * 340,
-      opacity: Math.abs(diff) > 2 ? 0 : 1 - Math.abs(diff) * 0.3,
-      rotateY: diff * -12,
+      scale: isActive ? 1.1 : 0.8,
+      x: diff * 350, // Slightly wider spacing
+      opacity: Math.abs(diff) > 2 ? 0 : 1 - Math.abs(diff) * 0.4,
+      rotateY: diff * -15,
     };
   };
 
   return (
-    <section id="developers" className="relative bg-background py-20 overflow-hidden">
-      <div className="mx-auto max-w-7xl px-4">
+    <section id="developers" className="relative bg-black py-24 overflow-hidden">
+      <div className="mx-auto max-w-[1400px] px-4">
         
         {/* Category Filter Buttons */}
-        <div className="mb-16 flex flex-wrap justify-center gap-2">
+        <div className="mb-20 flex flex-wrap justify-center gap-4">
           {categories.map((category) => (
             <button
               key={category}
               onClick={() => setSelectedCategory(category)}
-              className={`px-6 py-2 rounded-full text-sm font-medium transition-all duration-300 border ${
+              className={`px-8 py-3 rounded-full text-sm font-bold tracking-wide transition-all duration-300 border-2 ${
                 selectedCategory === category
-                  ? 'bg-cyan-500 border-cyan-400 text-black shadow-[0_0_15px_rgba(6,182,212,0.4)]'
-                  : 'bg-transparent border-white/10 text-muted-foreground hover:border-cyan-500/50'
+                  ? 'bg-cyan-500 border-cyan-400 text-black shadow-[0_0_20px_rgba(6,182,212,0.6)]'
+                  : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-cyan-500/50 hover:text-white'
               }`}
             >
               {category}
@@ -77,30 +67,29 @@ export function DevelopersSection() {
         </div>
 
         {/* Carousel Area */}
-        <div className="relative flex h-[550px] items-center justify-center">
+        <div className="relative flex h-[600px] items-center justify-center">
           
-          {/* Main Navigation Buttons (The "Correct" Floating Style) */}
-          <div className="absolute inset-x-0 top-1/2 z-50 flex -translate-y-1/2 justify-between px-4 md:px-10">
-            <Button
+          {/* HIGH VISIBILITY LARGE BUTTONS */}
+          <div className="absolute inset-x-0 z-[60] flex justify-between px-2 md:px-8">
+            <button
               onClick={handlePrev}
-              variant="outline"
-              size="icon"
-              className="h-12 w-12 rounded-full border-cyan-500/20 bg-background/20 backdrop-blur-md hover:bg-cyan-500/20 hover:border-cyan-400 text-cyan-400 transition-all active:scale-95"
+              className="group flex h-20 w-20 items-center justify-center rounded-full bg-zinc-900/80 border-2 border-cyan-500/50 text-cyan-400 backdrop-blur-xl transition-all hover:scale-110 hover:bg-cyan-500 hover:text-black hover:border-cyan-300 active:scale-90 shadow-[0_0_30px_rgba(0,0,0,0.5)]"
+              aria-label="Previous Developer"
             >
-              <ChevronLeft className="h-6 w-6" />
-            </Button>
-            <Button
+              <ChevronLeft className="h-10 w-10 transition-transform group-hover:-translate-x-1" />
+            </button>
+
+            <button
               onClick={handleNext}
-              variant="outline"
-              size="icon"
-              className="h-12 w-12 rounded-full border-cyan-500/20 bg-background/20 backdrop-blur-md hover:bg-cyan-500/20 hover:border-cyan-400 text-cyan-400 transition-all active:scale-95"
+              className="group flex h-20 w-20 items-center justify-center rounded-full bg-zinc-900/80 border-2 border-cyan-500/50 text-cyan-400 backdrop-blur-xl transition-all hover:scale-110 hover:bg-cyan-500 hover:text-black hover:border-cyan-300 active:scale-90 shadow-[0_0_30px_rgba(0,0,0,0.5)]"
+              aria-label="Next Developer"
             >
-              <ChevronRight className="h-6 w-6" />
-            </Button>
+              <ChevronRight className="h-10 w-10 transition-transform group-hover:translate-x-1" />
+            </button>
           </div>
 
           {/* Cards Container */}
-          <div className="relative h-full w-full max-w-sm">
+          <div className="relative h-full w-full max-w-md pointer-events-none">
             <AnimatePresence mode="popLayout">
               {filteredDevelopers.map((developer, index) => {
                 const styles = getCardStyles(index);
@@ -114,12 +103,14 @@ export function DevelopersSection() {
                       opacity: styles.opacity,
                       rotateY: styles.rotateY,
                     }}
-                    transition={{ type: 'spring', stiffness: 260, damping: 20 }}
-                    className="absolute inset-0 cursor-pointer"
+                    transition={{ type: 'spring', stiffness: 200, damping: 25 }}
+                    className="absolute inset-0 pointer-events-auto"
                     onClick={() => styles.isActive ? null : setCurrentIndex(index)}
                   >
-                    <div className={`h-full rounded-2xl transition-all duration-500 ${
-                      styles.isActive ? 'shadow-[0_0_40px_rgba(6,182,212,0.3)]' : 'grayscale-[50%] opacity-50'
+                    <div className={`h-full rounded-2xl transition-all duration-700 ${
+                      styles.isActive 
+                        ? 'shadow-[0_0_50px_rgba(6,182,212,0.4)] ring-2 ring-cyan-500/50' 
+                        : 'grayscale-[80%] brightness-50'
                     }`}>
                       <DeveloperCard {...developer} index={index} />
                     </div>
@@ -130,12 +121,15 @@ export function DevelopersSection() {
           </div>
         </div>
 
-        {/* Bottom Pagination Dots (Optional Visual Indicator) */}
-        <div className="mt-8 flex justify-center gap-2">
+        {/* Bottom Pagination (Larger Dots) */}
+        <div className="mt-12 flex justify-center gap-3">
           {filteredDevelopers.map((_, i) => (
-            <div 
+            <button 
               key={i} 
-              className={`h-1.5 transition-all duration-300 rounded-full ${i === currentIndex ? 'w-8 bg-cyan-500' : 'w-2 bg-white/20'}`} 
+              onClick={() => setCurrentIndex(i)}
+              className={`h-3 transition-all duration-500 rounded-full ${
+                i === currentIndex ? 'w-12 bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.8)]' : 'w-3 bg-zinc-800 hover:bg-zinc-600'
+              }`} 
             />
           ))}
         </div>
